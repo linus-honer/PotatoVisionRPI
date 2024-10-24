@@ -32,6 +32,8 @@ public class Logger {
     }
     public static enum LogClassType {
         Master,
+        Generic,
+        Hardware,
         WebServer,
         Camera,
         Pipeline,
