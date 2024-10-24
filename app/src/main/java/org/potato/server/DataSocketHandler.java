@@ -1,4 +1,4 @@
-package server.handlers;
+package org.potato.server;
 
 public class DataSocketHandler {
     
