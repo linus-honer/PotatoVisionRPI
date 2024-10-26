@@ -21,6 +21,10 @@ public class Packet {
         this.data = data;
     }
 
+    public int getLength() {
+        return data.length;
+    }
+
     /**
      * Clears all data in the packet
      */

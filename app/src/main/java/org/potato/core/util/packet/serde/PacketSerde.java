@@ -15,6 +15,8 @@ import org.potato.core.util.packet.Packet;
         return "millerbots:" + getTypeName() + ":" + getUUID();
     }
 
+    int getMaxByteSize();
+
     void pack(Packet packet, T value);
 
     T unpack(Packet packet);
