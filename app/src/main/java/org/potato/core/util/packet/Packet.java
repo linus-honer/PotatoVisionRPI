@@ -1,8 +1,11 @@
 package org.potato.core.util.packet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import org.potato.core.util.packet.serde.PacketSerde;
 
 public class Packet {
     /** The data stored in this packet (byte[]) */
@@ -34,6 +37,44 @@ public class Packet {
         this.data = data;
     }
 
+    public byte[] getWrittenDataCopy() {
+        return Arrays.copyOfRange(data, 0, write);
+    }
+
+    private static int newLength(int old, int min, int pref) {
+        int prefLen = old + Math.max(min, pref);
+        if(0 < prefLen && prefLen <= Integer.MAX_VALUE - 8) {
+            return prefLen;
+        } else {
+            return hugeLength(old, min);
+        }
+    }
+
+    private static int hugeLength(int old, int min) {
+        int minLen = old + min;
+        if(minLen < 0) {
+            throw new OutOfMemoryError("Required array length " + old + " + " + min + " is too large");
+        } else if(minLen < Integer.MAX_VALUE - 8) {
+            return Integer.MAX_VALUE - 8;
+        } else {
+            return minLen;
+        }
+    }
+
+    private void ensureCapacity(int bytes) {
+        int minCap = write + bytes;
+        int oldCap = data.length;
+        if(minCap < oldCap) {
+            return;
+        }
+        if(oldCap > 0) {
+            int newCap = Packet.newLength(oldCap, minCap - oldCap, oldCap >> 1);
+            data = Arrays.copyOf(data, newCap);
+        } else {
+            data = new byte[Math.max(256, minCap)];
+        }
+    }
+
 
 
 
@@ -54,6 +95,7 @@ public class Packet {
      * @return Returns false if the packet is too small for the data
      */
     public boolean encode(byte in) {
+        ensureCapacity(1);
         if(data.length < write + 1) {
             return false;
         }
@@ -69,6 +111,7 @@ public class Packet {
      * @return Returns false if the packet is too small for the data
      */
     public boolean encode(boolean in) {
+        ensureCapacity(1);
         if(data.length < write + 1) {
             return false;
         }
@@ -84,6 +127,7 @@ public class Packet {
      * @return Returns false if the packet is too small for the data
      */
     public boolean encode(int in) {
+        ensureCapacity(4);
         if(data.length < write + 4) {
             return false;
         }
@@ -103,6 +147,7 @@ public class Packet {
      * @return Returns false if the packet is too small for the data
      */
     public boolean encode(float in) {
+        ensureCapacity(4);
         if(data.length < write + 4) {
             return false;
         }
@@ -123,6 +168,7 @@ public class Packet {
      * @return Returns false if the packet is too small for the data
      */
     public boolean encode(double in) {
+        ensureCapacity(8);
         if(data.length < write + 8) {
             return false;
         }
@@ -147,6 +193,7 @@ public class Packet {
      * @return Returns false if the packet is too small for the data
      */
     public boolean encode(long in) {
+        ensureCapacity(8);
         if(data.length < write + 8) {
             return false;
         }
