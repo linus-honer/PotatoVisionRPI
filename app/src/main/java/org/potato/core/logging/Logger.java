@@ -33,6 +33,7 @@ public class Logger {
     public static enum LogClassType {
         Master,
         Generic,
+        Vision,
         Hardware,
         WebServer,
         Camera,

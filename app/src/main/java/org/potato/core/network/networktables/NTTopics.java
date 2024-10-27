@@ -1,5 +1,8 @@
 package org.potato.core.network.networktables;
 
+import org.potato.core.util.packet.nt.PacketPublisher;
+import org.potato.core.vision.pipeline.result.VisionPipelineResult;
+
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
@@ -8,6 +11,8 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.networktables.RawPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 
 public class NTTopics {
@@ -34,7 +39,8 @@ public class NTTopics {
     public DoubleArrayPublisher cameraDistortionPublisher;
     public DoublePublisher cameraFOVPublisher;
 
-    //TODO: Packet stuff
+    //packets yay!!!
+    PacketPublisher<VisionPipelineResult> pipelineResultPublisher;
 
     public void updateEntries() {
         pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndex").publish();
@@ -57,6 +63,8 @@ public class NTTopics {
         cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
         cameraDistortionPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
         cameraFOVPublisher = subTable.getDoubleTopic("cameraFOV").publish();
+
+        pipelineResultPublisher = new PacketPublisher<VisionPipelineResult>(getPacketPublisher(), VisionPipelineResult.serde);
     }
 
     public void removeEntries() {
@@ -77,5 +85,11 @@ public class NTTopics {
 
         if (cameraIntrinsicsPublisher != null) cameraIntrinsicsPublisher.close();
         if (cameraDistortionPublisher != null) cameraDistortionPublisher.close();
+
+        if(pipelineResultPublisher != null) pipelineResultPublisher.close();
+    }
+
+    private RawPublisher getPacketPublisher() {
+        return subTable.getRawTopic("rawBytes").publish(VisionPipelineResult.serde.getTypeString(), PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
     }
 }

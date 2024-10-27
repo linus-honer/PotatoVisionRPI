@@ -25,6 +25,10 @@ public class PacketPublisher<T> {
         }
     }
 
+    public void close() {
+        publisher.close();
+    }
+
     public void set(T value) {
         set(value, serde.getMaxByteSize());
     }
